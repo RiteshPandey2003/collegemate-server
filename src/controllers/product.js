@@ -85,34 +85,29 @@ const registerProduct = async (req, res) => {
 };
 
 
-const getProductsByUserId = async (req, res) => {
+const getProductsByUserIdAndProductId = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId, productId } = req.params;
 
-    // Fetch all products
-    const products = await Product.find();
+    const product = await Product.findById(productId);
 
-    // Search for the seller with the given userId
-    let foundSeller;
-    products.forEach(product => {
-      const seller = product.sellers.find(s => s._id.toString() === userId);
-      if (seller) {
-        foundSeller = seller;
-      }
-    });
-
-    // If seller is not found, return 404
-    if (!foundSeller) {
-      return res.status(404).json({ error: "Seller not found with the given ID" });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found with the given ID" });
     }
 
-    // If found, return the seller object
+    const foundSeller = product.sellers.find(s => s._id.toString() === userId);
+
+    if (!foundSeller) {
+      return res.status(404).json({ error: "Seller not found with the given ID in this product" });
+    }
+
     res.status(200).json({ seller: foundSeller });
   } catch (error) {
     console.error("Error fetching seller:", error);
     res.status(500).json({ error: "Something went wrong while fetching the seller" });
   }
 };
+
 
 const getProducts = async (req, res) => {
   try {
@@ -195,4 +190,4 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-export { registerProduct, updateProductById, deleteProduct, getProductsByUserId, getProducts};
+export { registerProduct, updateProductById, deleteProduct, getProductsByUserIdAndProductId, getProducts};
